@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback Analytics Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    .feedback-card {
+        transition: transform 0.3s ease;
+    }
+    .feedback-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-5 fw-bold">
+            <i class="fas fa-chart-bar me-2"></i>
+            Feedback Analytics Dashboard
+        </h1>
+        <p class="lead text-muted">
+            Real-time insights from collected feedback
+        </p>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-5">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Total Submissions</h6>
+                        <h2 class="card-title mb-0" id="totalSubmissions">0</h2>
+                    </div>
+                    <i class="fas fa-file-alt fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Avg. Satisfaction</h6>
+                        <h2 class="card-title mb-0" id="avgSatisfaction">0.0</h2>
+                    </div>
+                    <i class="fas fa-smile fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Recommendation Rate</h6>
+                        <h2 class="card-title mb-0" id="recommendRate">0%</h2>
+                    </div>
+                    <i class="fas fa-thumbs-up fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-6 mb-3">
+        <div class="card bg-warning text-dark h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Avg. Apply Likelihood</h6>
+                        <h2 class="card-title mb-0" id="avgApply">0.0</h2>
+                    </div>
+                    <i class="fas fa-bullseye fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row mb-5">
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-star me-2"></i>
+                    Average Ratings
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="ratingsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-thumbs-up me-2"></i>
+                    Recommendations
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="recommendationsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Feedback -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Recent Feedback
+                </h5>
+                <button class="btn btn-sm btn-outline-primary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Submitted</th>
+                                <th>Content Quality</th>
+                                <th>Clarity</th>
+                                <th>Satisfaction</th>
+                                <th>Recommend</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in feedback %}
+                            <tr class="feedback-card">
+                                <td>#{{ item.id }}</td>
+                                <td>{{ item.created_at }}</td>
+                                <td>
+                                    <div class="rating-small">
+                                        {% for i in range(item.content_quality) %}
+                                        <i class="fas fa-star text-warning"></i>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="rating-small">
+                                        {% for i in range(item.clarity) %}
+                                        <i class="fas fa-star text-warning"></i>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="rating-small">
+                                        {% for i in range(item.satisfaction) %}
+                                        <i class="fas fa-star text-warning"></i>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if item.recommend == 'Yes' %}
+                                    <span class="badge bg-success">Yes</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">No</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-info" onclick="viewFeedback({{ item.id }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Detail Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Feedback Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="feedbackDetails">
+                Loading...
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    let ratingsChart, recommendationsChart;
+    
+    // Load and display statistics
+    function loadStatistics() {
+        fetch('/api/feedback/stats')
+            .then(response => response.json())
+            .then(data => {
+                // Update cards
+                document.getElementById('totalSubmissions').textContent = 
+                    data.total_submissions.toLocaleString();
+                document.getElementById('avgSatisfaction').textContent = 
+                    data.average_ratings.satisfaction;
+                document.getElementById('avgApply').textContent = 
+                    data.average_ratings.apply_likelihood;
+                
+                // Calculate recommendation rate
+                const total = data.total_submissions;
+                const yes = data.recommendations.Yes || 0;
+                const rate = total > 0 ? Math.round((yes / total) * 100) : 0;
+                document.getElementById('recommendRate').textContent = rate + '%';
+                
+                // Update charts
+                updateCharts(data);
+            });
+    }
+    
+    // Update charts with data
+    function updateCharts(data) {
+        // Ratings Chart
+        if (ratingsChart) {
+            ratingsChart.destroy();
+        }
+        
+        const ratingsCtx = document.getElementById('ratingsChart').getContext('2d');
+        ratingsChart = new Chart(ratingsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Content', 'Clarity', 'Engagement', 'Satisfaction', 'Apply'],
+                datasets: [{
+                    label: 'Average Rating',
+                    data: [
+                        data.average_ratings.content_quality,
+                        data.average_ratings.clarity,
+                        data.average_ratings.engagement,
+                        data.average_ratings.satisfaction,
+                        data.average_ratings.apply_likelihood
+                    ],
+                    backgroundColor: [
+                        '#4e73df',
+                        '#1cc88a',
+                        '#36b9cc',
+                        '#f6c23e',
+                        '#e74a3b'
+                    ]
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 5,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+        
+        // Recommendations Chart
+        if (recommendationsChart) {
+            recommendationsChart.destroy();
+        }
+        
+        const recCtx = document.getElementById('recommendationsChart').getContext('2d');
+        recommendationsChart = new Chart(recCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Yes', 'No'],
+                datasets: [{
+                    data: [
+                        data.recommendations.Yes || 0,
+                        data.recommendations.No || 0
+                    ],
+                    backgroundColor: [
+                        '#1cc88a',
+                        '#e74a3b'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    
+    // View detailed feedback
+    function viewFeedback(id) {
+        fetch(`/api/feedback/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                const modalBody = document.getElementById('feedbackDetails');
+                modalBody.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Ratings</h6>
+                            <ul class="list-group mb-3">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Content Quality:</span>
+                                    <span>${data.content_quality}/5</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Clarity:</span>
+                                    <span>${data.clarity}/5</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Engagement:</span>
+                                    <span>${data.engagement}/5</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Satisfaction:</span>
+                                    <span>${data.satisfaction}/5</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Apply Likelihood:</span>
+                                    <span>${data.apply_likelihood}/5</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Details</h6>
+                            <p><strong>Recommend:</strong> ${data.recommend}</p>
+                            <p><strong>Submitted:</strong> ${data.created_at}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Most Valuable</h6>
+                            <div class="card card-body bg-light">
+                                ${data.most_valuable}
+                            </div>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <h6>Improvements Suggested</h6>
+                            <div class="card card-body bg-light">
+                                ${data.improvements}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const modal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+                modal.show();
+            });
+    }
+    
+    // Refresh all data
+    function refreshData() {
+        loadStatistics();
+        location.reload();
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadStatistics();
+    });
+</script>
+{% endblock %}

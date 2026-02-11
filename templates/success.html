@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback Submitted Successfully{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6 text-center">
+        <!-- Success Animation -->
+        <div class="success-animation mb-4">
+            <div class="checkmark">
+                <div class="checkmark__circle"></div>
+                <div class="checkmark__stem"></div>
+                <div class="checkmark__kick"></div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-5">
+                <h1 class="display-5 fw-bold text-success mb-3">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Thank You!
+                </h1>
+                
+                <p class="lead mb-4">
+                    Your valuable feedback has been submitted successfully.
+                </p>
+                
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Your insights will help us improve future training sessions for everyone.
+                </div>
+                
+                <!-- Next Steps -->
+                <div class="mb-4">
+                    <h5 class="mb-3">What happens next?</h5>
+                    <div class="d-flex justify-content-center">
+                        <div class="text-center mx-3">
+                            <div class="circle-icon bg-primary text-white mb-2">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <p class="small mb-0">We'll analyze your feedback</p>
+                        </div>
+                        <div class="text-center mx-3">
+                            <div class="circle-icon bg-success text-white mb-2">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <p class="small mb-0">Implement improvements</p>
+                        </div>
+                        <div class="text-center mx-3">
+                            <div class="circle-icon bg-warning text-white mb-2">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <p class="small mb-0">Enhance future sessions</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-grid gap-3 d-sm-flex justify-content-sm-center mt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg px-4 gap-3">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Submit Another Response
+                    </a>
+                    <a href="{{ url_for('admin') }}" class="btn btn-outline-secondary btn-lg px-4">
+                        <i class="fas fa-chart-line me-2"></i>
+                        View Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feedback Statistics -->
+        <div class="mt-5">
+            <h5 class="mb-3">Feedback Statistics</h5>
+            <div class="row g-3">
+                <div class="col-6 col-md-3">
+                    <div class="stat-card p-3 rounded text-center">
+                        <div class="stat-number" id="totalSubmissions">0</div>
+                        <div class="stat-label small">Total Submissions</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card p-3 rounded text-center">
+                        <div class="stat-number" id="avgSatisfaction">0</div>
+                        <div class="stat-label small">Avg. Satisfaction</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card p-3 rounded text-center">
+                        <div class="stat-number" id="recommendRate">0%</div>
+                        <div class="stat-label small">Recommendation Rate</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card p-3 rounded text-center">
+                        <div class="stat-number" id="avgApply">0</div>
+                        <div class="stat-label small">Avg. Apply Likelihood</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Return Home Link -->
+        <div class="mt-5">
+            <a href="{{ url_for('index') }}" class="text-decoration-none">
+                <i class="fas fa-arrow-left me-1"></i>
+                Return to Home Page
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Load statistics on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/feedback/stats')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('totalSubmissions').textContent = 
+                    data.total_submissions.toLocaleString();
+                document.getElementById('avgSatisfaction').textContent = 
+                    data.average_ratings.satisfaction;
+                document.getElementById('avgApply').textContent = 
+                    data.average_ratings.apply_likelihood;
+                
+                // Calculate recommendation rate
+                const total = data.total_submissions;
+                const yes = data.recommendations.Yes || 0;
+                const rate = total > 0 ? Math.round((yes / total) * 100) : 0;
+                document.getElementById('recommendRate').textContent = rate + '%';
+            })
+            .catch(error => {
+                console.error('Error loading statistics:', error);
+            });
+    });
+</script>
+{% endblock %}

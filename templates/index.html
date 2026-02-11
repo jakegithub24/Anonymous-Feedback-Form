@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Your Feedback{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold mb-3">
+                <i class="fas fa-comment-dots text-primary me-2"></i>
+                Training Feedback Form
+            </h1>
+            <p class="lead text-muted">
+                Your honest feedback helps us improve our training programs. 
+                Please take a moment to share your experience.
+            </p>
+            <div class="progress mb-4" style="height: 4px;">
+                <div class="progress-bar bg-success" id="formProgress" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Feedback Form -->
+        <form id="feedbackForm" class="needs-validation" novalidate>
+            <!-- Rating Section -->
+            <div class="card mb-4 form-section" id="ratingSection">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-star me-2"></i>
+                        Training Evaluation
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Please rate the following aspects on a scale of 1 (Poor) to 5 (Excellent)
+                    </p>
+                    
+                    {% set rating_labels = {
+                        'content_quality': 'Quality of the content',
+                        'clarity': 'Clarity of explanations',
+                        'engagement': 'Engagement level of visuals',
+                        'satisfaction': 'Overall satisfaction',
+                        'apply_likelihood': 'How likely are you to apply what you learned?'
+                    } %}
+                    
+                    {% for field, label in rating_labels.items() %}
+                    <div class="rating-item mb-4">
+                        <label class="form-label fw-semibold">{{ label }}</label>
+                        <div class="rating-stars mt-2" data-field="{{ field }}">
+                            {% for i in range(5, 0, -1) %}
+                            <input type="radio" id="{{ field }}_{{ i }}" name="{{ field }}" value="{{ i }}" required>
+                            <label for="{{ field }}_{{ i }}" title="{{ i }} stars">
+                                <i class="far fa-star"></i>
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <div class="rating-labels d-flex justify-content-between mt-1">
+                            <small class="text-muted">Poor</small>
+                            <small class="text-muted">Excellent</small>
+                        </div>
+                        <div class="invalid-feedback">Please provide a rating for {{ label|lower }}</div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-primary" disabled>Previous</button>
+                        <button type="button" class="btn btn-primary next-section">Next: Open-ended Feedback</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Feedback Section -->
+            <div class="card mb-4 form-section" id="textSection" style="display: none;">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Detailed Feedback
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Most Valuable -->
+                    <div class="mb-4">
+                        <label for="most_valuable" class="form-label fw-semibold">
+                            What did you find most valuable?
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="most_valuable" 
+                            name="most_valuable" 
+                            rows="4" 
+                            placeholder="Share what stood out to you most in this training..."
+                            maxlength="2000"
+                            required
+                        ></textarea>
+                        <div class="form-text">
+                            Maximum 250 words. <span id="most_valuable_counter">0</span>/2000 characters
+                        </div>
+                        <div class="invalid-feedback">Please share what you found most valuable</div>
+                    </div>
+
+                    <!-- Improvements -->
+                    <div class="mb-4">
+                        <label for="improvements" class="form-label fw-semibold">
+                            What improvements would you suggest?
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="improvements" 
+                            name="improvements" 
+                            rows="4" 
+                            placeholder="Your suggestions help us improve..."
+                            maxlength="2000"
+                            required
+                        ></textarea>
+                        <div class="form-text">
+                            Maximum 250 words. <span id="improvements_counter">0</span>/2000 characters
+                        </div>
+                        <div class="invalid-feedback">Please provide your improvement suggestions</div>
+                    </div>
+
+                    <!-- Recommendation -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold d-block">
+                            Would you recommend this training to others?
+                        </label>
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="recommend" id="recommend_yes" value="Yes" required>
+                            <label class="btn btn-outline-success" for="recommend_yes">
+                                <i class="fas fa-thumbs-up me-2"></i> Yes
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="recommend" id="recommend_no" value="No">
+                            <label class="btn btn-outline-danger" for="recommend_no">
+                                <i class="fas fa-thumbs-down me-2"></i> No
+                            </label>
+                        </div>
+                        <div class="invalid-feedback d-block">Please select whether you would recommend this training</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-info prev-section">Previous: Ratings</button>
+                        <button type="button" class="btn btn-info next-section">Review & Submit</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Section -->
+            <div class="card mb-4 form-section" id="reviewSection" style="display: none;">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-clipboard-check me-2"></i>
+                        Review Your Feedback
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Please review your feedback before submitting. You can go back to make changes.
+                    </div>
+
+                    <div class="review-content">
+                        <!-- Ratings will be populated by JavaScript -->
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-warning prev-section">Previous: Details</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Submit Feedback
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="text-center mt-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Submitting...</span>
+            </div>
+            <p class="mt-2 text-muted">Submitting your feedback...</p>
+        </div>
+
+        <!-- Success Message (hidden by default) -->
+        <div id="successMessage" class="alert alert-success mt-4" style="display: none;">
+            <h4 class="alert-heading">
+                <i class="fas fa-check-circle me-2"></i>
+                Thank You!
+            </h4>
+            <p>Your feedback has been submitted successfully.</p>
+            <hr>
+            <p class="mb-0">
+                <a href="{{ url_for('index') }}" class="alert-link">Submit another response</a>
+                or
+                <a href="{{ url_for('admin') }}" class="alert-link">view analytics</a>
+            </p>
+        </div>
+
+        <!-- Error Message (hidden by default) -->
+        <div id="errorMessage" class="alert alert-danger mt-4" style="display: none;">
+            <h4 class="alert-heading">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Submission Failed
+            </h4>
+            <p id="errorText">An error occurred while submitting your feedback.</p>
+            <button type="button" class="btn btn-outline-danger" onclick="retrySubmission()">
+                <i class="fas fa-redo me-1"></i> Try Again
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Form Submission Data (hidden) -->
+<div id="formData" style="display: none;"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form data will be stored here
+    let formData = {};
+    
+    // Current section tracking
+    let currentSection = 1;
+    const totalSections = 3;
+</script>
+{% endblock %}
