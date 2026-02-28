@@ -28,6 +28,11 @@
         <p class="lead text-muted">
             Real-time insights from collected feedback
         </p>
+    <div class="alert alert-secondary">
+        <i class="fas fa-share-alt me-1"></i>
+        <strong>Share the form:</strong>
+        <a href="{{ url_for('share') }}" class="alert-link">open public link & QR code</a>
+    </div>
     </div>
 </div>
 
@@ -145,10 +150,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Submitted</th>
-                                <th>Content Quality</th>
-                                <th>Clarity</th>
-                                <th>Satisfaction</th>
-                                <th>Recommend</th>
+                                <th>Responses</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -158,31 +160,23 @@
                                 <td>#{{ item.id }}</td>
                                 <td>{{ item.created_at }}</td>
                                 <td>
-                                    <div class="rating-small">
-                                        {% for i in range(item.content_quality) %}
-                                        <i class="fas fa-star text-warning"></i>
-                                        {% endfor %}
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="rating-small">
-                                        {% for i in range(item.clarity) %}
-                                        <i class="fas fa-star text-warning"></i>
-                                        {% endfor %}
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="rating-small">
-                                        {% for i in range(item.satisfaction) %}
-                                        <i class="fas fa-star text-warning"></i>
-                                        {% endfor %}
-                                    </div>
-                                </td>
-                                <td>
-                                    {% if item.recommend == 'Yes' %}
-                                    <span class="badge bg-success">Yes</span>
+                                    {% if item.data %}
+                                        {{ item.data|truncate(60) }}
                                     {% else %}
-                                    <span class="badge bg-danger">No</span>
+                                        {% set parts = [] %}
+                                        {% if item.content_quality %}
+                                            {% set _ = parts.append('CQ:'+item.content_quality|string) %}
+                                        {% endif %}
+                                        {% if item.clarity %}
+                                            {% set _ = parts.append('Cl:'+item.clarity|string) %}
+                                        {% endif %}
+                                        {% if item.satisfaction %}
+                                            {% set _ = parts.append('S:'+item.satisfaction|string) %}
+                                        {% endif %}
+                                        {% if item.recommend %}
+                                            {% set _ = parts.append('R:'+item.recommend) %}
+                                        {% endif %}
+                                        {{ parts|join(', ') }}
                                     {% endif %}
                                 </td>
                                 <td>
@@ -228,21 +222,28 @@
         fetch('/api/feedback/stats')
             .then(response => response.json())
             .then(data => {
-                // Update cards
-                document.getElementById('totalSubmissions').textContent = 
+                document.getElementById('totalSubmissions').textContent =
                     data.total_submissions.toLocaleString();
-                document.getElementById('avgSatisfaction').textContent = 
-                    data.average_ratings.satisfaction;
-                document.getElementById('avgApply').textContent = 
-                    data.average_ratings.apply_likelihood;
-                
-                // Calculate recommendation rate
+
+                // optionally update other cards if those keys exist
+                if (data.average_ratings.satisfaction !== undefined) {
+                    document.getElementById('avgSatisfaction').textContent =
+                        data.average_ratings.satisfaction;
+                } else {
+                    document.getElementById('avgSatisfaction').textContent = '-';
+                }
+                if (data.average_ratings.apply_likelihood !== undefined) {
+                    document.getElementById('avgApply').textContent =
+                        data.average_ratings.apply_likelihood;
+                } else {
+                    document.getElementById('avgApply').textContent = '-';
+                }
+
                 const total = data.total_submissions;
-                const yes = data.recommendations.Yes || 0;
+                const yes = data.recommendations?.Yes || 0;
                 const rate = total > 0 ? Math.round((yes / total) * 100) : 0;
                 document.getElementById('recommendRate').textContent = rate + '%';
-                
-                // Update charts
+
                 updateCharts(data);
             });
     }
@@ -253,28 +254,17 @@
         if (ratingsChart) {
             ratingsChart.destroy();
         }
-        
         const ratingsCtx = document.getElementById('ratingsChart').getContext('2d');
+        const labels = Object.keys(data.average_ratings || {});
+        const values = labels.map(k => data.average_ratings[k]);
         ratingsChart = new Chart(ratingsCtx, {
             type: 'bar',
             data: {
-                labels: ['Content', 'Clarity', 'Engagement', 'Satisfaction', 'Apply'],
+                labels: labels,
                 datasets: [{
                     label: 'Average Rating',
-                    data: [
-                        data.average_ratings.content_quality,
-                        data.average_ratings.clarity,
-                        data.average_ratings.engagement,
-                        data.average_ratings.satisfaction,
-                        data.average_ratings.apply_likelihood
-                    ],
-                    backgroundColor: [
-                        '#4e73df',
-                        '#1cc88a',
-                        '#36b9cc',
-                        '#f6c23e',
-                        '#e74a3b'
-                    ]
+                    data: values,
+                    backgroundColor: labels.map(() => '#4e73df')
                 }]
             },
             options: {
@@ -282,47 +272,39 @@
                     y: {
                         beginAtZero: true,
                         max: 5,
-                        ticks: {
-                            stepSize: 1
-                        }
+                        ticks: { stepSize: 1 }
                     }
                 },
                 responsive: true,
                 maintainAspectRatio: false
             }
         });
-        
-        // Recommendations Chart
+
+        // Recommendations Chart (if available)
         if (recommendationsChart) {
             recommendationsChart.destroy();
         }
-        
         const recCtx = document.getElementById('recommendationsChart').getContext('2d');
-        recommendationsChart = new Chart(recCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Yes', 'No'],
-                datasets: [{
-                    data: [
-                        data.recommendations.Yes || 0,
-                        data.recommendations.No || 0
-                    ],
-                    backgroundColor: [
-                        '#1cc88a',
-                        '#e74a3b'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
+        const recData = data.recommendations || {};
+        const recLabels = Object.keys(recData);
+        const recValues = recLabels.map(k => recData[k]);
+        if (recLabels.length) {
+            recommendationsChart = new Chart(recCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: recLabels,
+                    datasets: [{
+                        data: recValues,
+                        backgroundColor: recLabels.map((_, i) => i % 2 ? '#e74a3b' : '#1cc88a')
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
                 }
-            }
-        });
+            });
+        }
     }
     
     // View detailed feedback
@@ -331,8 +313,18 @@
             .then(response => response.json())
             .then(data => {
                 const modalBody = document.getElementById('feedbackDetails');
-                modalBody.innerHTML = `
-                    <div class="row">
+                let html = '<div class="row">';
+                for (const key in data) {
+                    let value = data[key];
+                    if (typeof value === 'object') {
+                        value = JSON.stringify(value);
+                    }
+                    html += `<div class="col-12 mb-2"><strong>${key}:</strong> ${value}</div>`;
+                }
+                html += '</div>';
+                modalBody.innerHTML = html;
+            });
+    }
                         <div class="col-md-6">
                             <h6>Ratings</h6>
                             <ul class="list-group mb-3">

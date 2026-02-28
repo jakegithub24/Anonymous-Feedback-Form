@@ -1,3 +1,7 @@
 Flask
 Flask-Mail
 python-dotenv
+pyngrok
+qrcode
+
+pillow

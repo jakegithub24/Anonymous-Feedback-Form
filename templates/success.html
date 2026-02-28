@@ -122,13 +122,12 @@
                 document.getElementById('totalSubmissions').textContent = 
                     data.total_submissions.toLocaleString();
                 document.getElementById('avgSatisfaction').textContent = 
-                    data.average_ratings.satisfaction;
+                    data.average_ratings.satisfaction || '-';
                 document.getElementById('avgApply').textContent = 
-                    data.average_ratings.apply_likelihood;
+                    data.average_ratings.apply_likelihood || '-';
                 
-                // Calculate recommendation rate
                 const total = data.total_submissions;
-                const yes = data.recommendations.Yes || 0;
+                const yes = data.recommendations?.Yes || 0;
                 const rate = total > 0 ? Math.round((yes / total) * 100) : 0;
                 document.getElementById('recommendRate').textContent = rate + '%';
             })

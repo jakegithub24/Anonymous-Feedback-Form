@@ -9,11 +9,10 @@
         <div class="text-center mb-5">
             <h1 class="display-5 fw-bold mb-3">
                 <i class="fas fa-comment-dots text-primary me-2"></i>
-                Training Feedback Form
+                Feedback Form
             </h1>
             <p class="lead text-muted">
-                Your honest feedback helps us improve our training programs. 
-                Please take a moment to share your experience.
+                Your honest feedback helps us improve. Please take a moment to share your experience.
             </p>
             <div class="progress mb-4" style="height: 4px;">
                 <div class="progress-bar bg-success" id="formProgress" style="width: 0%"></div>
@@ -22,34 +21,26 @@
 
         <!-- Feedback Form -->
         <form id="feedbackForm" class="needs-validation" novalidate>
-            <!-- Rating Section -->
+            {% if form.rating and form.rating|length > 0 %}
+        <!-- Rating Section -->
             <div class="card mb-4 form-section" id="ratingSection">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
                         <i class="fas fa-star me-2"></i>
-                        Training Evaluation
+                        Evaluation
                     </h4>
                 </div>
                 <div class="card-body">
                     <p class="text-muted mb-4">
-                        Please rate the following aspects on a scale of 1 (Poor) to 5 (Excellent)
+                        Please rate the following items on a scale of 1 (Poor) to 5 (Excellent)
                     </p>
-                    
-                    {% set rating_labels = {
-                        'content_quality': 'Quality of the content',
-                        'clarity': 'Clarity of explanations',
-                        'engagement': 'Engagement level of visuals',
-                        'satisfaction': 'Overall satisfaction',
-                        'apply_likelihood': 'How likely are you to apply what you learned?'
-                    } %}
-                    
-                    {% for field, label in rating_labels.items() %}
+                    {% for q in form.rating %}
                     <div class="rating-item mb-4">
-                        <label class="form-label fw-semibold">{{ label }}</label>
-                        <div class="rating-stars mt-2" data-field="{{ field }}">
+                        <label class="form-label fw-semibold">{{ q.label }}</label>
+                        <div class="rating-stars mt-2" data-field="{{ q.name }}">
                             {% for i in range(5, 0, -1) %}
-                            <input type="radio" id="{{ field }}_{{ i }}" name="{{ field }}" value="{{ i }}" required>
-                            <label for="{{ field }}_{{ i }}" title="{{ i }} stars">
+                            <input type="radio" id="{{ q.name }}_{{ i }}" name="{{ q.name }}" value="{{ i }}" required>
+                            <label for="{{ q.name }}_{{ i }}" title="{{ i }} stars">
                                 <i class="far fa-star"></i>
                             </label>
                             {% endfor %}
@@ -58,108 +49,89 @@
                             <small class="text-muted">Poor</small>
                             <small class="text-muted">Excellent</small>
                         </div>
-                        <div class="invalid-feedback">Please provide a rating for {{ label|lower }}</div>
+                        <div class="invalid-feedback">Please provide a rating for {{ q.label|lower }}</div>
                     </div>
                     {% endfor %}
-                    
                     <div class="d-flex justify-content-between mt-4">
                         <button type="button" class="btn btn-outline-primary" disabled>Previous</button>
-                        <button type="button" class="btn btn-primary next-section">Next: Open-ended Feedback</button>
+                        <button type="button" class="btn btn-primary next-section">Next</button>
                     </div>
                 </div>
             </div>
+        {% endif %}
 
-            <!-- Text Feedback Section -->
+            {% if form.text or form.choice %}
+            <!-- Text/Choice Section -->
             <div class="card mb-4 form-section" id="textSection" style="display: none;">
                 <div class="card-header bg-info text-white">
                     <h4 class="mb-0">
                         <i class="fas fa-edit me-2"></i>
-                        Detailed Feedback
+                        Additional Feedback
                     </h4>
                 </div>
                 <div class="card-body">
-                    <!-- Most Valuable -->
+                    {% for q in form.text %}
                     <div class="mb-4">
-                        <label for="most_valuable" class="form-label fw-semibold">
-                            What did you find most valuable?
+                        <label for="{{ q.name }}" class="form-label fw-semibold">
+                            {{ q.label }}
                         </label>
                         <textarea 
                             class="form-control" 
-                            id="most_valuable" 
-                            name="most_valuable" 
-                            rows="4" 
-                            placeholder="Share what stood out to you most in this training..."
-                            maxlength="2000"
+                            id="{{ q.name }}" 
+                            name="{{ q.name }}" 
+                            rows="{{ q.rows or 4 }}" 
+                            placeholder="{{ q.placeholder or '' }}"
+                            maxlength="{{ q.maxlength or 2000 }}"
                             required
                         ></textarea>
+                        {% if q.maxlength %}
                         <div class="form-text">
-                            Maximum 250 words. <span id="most_valuable_counter">0</span>/2000 characters
+                            Maximum {{ q.maxlength }} characters. <span id="{{ q.name }}_counter">0</span>/{{ q.maxlength }} characters
                         </div>
-                        <div class="invalid-feedback">Please share what you found most valuable</div>
+                        {% endif %}
+                        <div class="invalid-feedback">Please answer {{ q.label|lower }}</div>
                     </div>
+                    {% endfor %}
 
-                    <!-- Improvements -->
-                    <div class="mb-4">
-                        <label for="improvements" class="form-label fw-semibold">
-                            What improvements would you suggest?
-                        </label>
-                        <textarea 
-                            class="form-control" 
-                            id="improvements" 
-                            name="improvements" 
-                            rows="4" 
-                            placeholder="Your suggestions help us improve..."
-                            maxlength="2000"
-                            required
-                        ></textarea>
-                        <div class="form-text">
-                            Maximum 250 words. <span id="improvements_counter">0</span>/2000 characters
-                        </div>
-                        <div class="invalid-feedback">Please provide your improvement suggestions</div>
-                    </div>
-
-                    <!-- Recommendation -->
+                    {% for q in form.choice %}
                     <div class="mb-4">
                         <label class="form-label fw-semibold d-block">
-                            Would you recommend this training to others?
+                            {{ q.label }}
                         </label>
                         <div class="btn-group" role="group">
-                            <input type="radio" class="btn-check" name="recommend" id="recommend_yes" value="Yes" required>
-                            <label class="btn btn-outline-success" for="recommend_yes">
-                                <i class="fas fa-thumbs-up me-2"></i> Yes
-                            </label>
-                            
-                            <input type="radio" class="btn-check" name="recommend" id="recommend_no" value="No">
-                            <label class="btn btn-outline-danger" for="recommend_no">
-                                <i class="fas fa-thumbs-down me-2"></i> No
-                            </label>
+                            {% for opt in q.options %}
+                            <input type="radio" class="btn-check" name="{{ q.name }}" id="{{ q.name }}_{{ loop.index }}" value="{{ opt }}" required>
+                            <label class="btn btn-outline-primary" for="{{ q.name }}_{{ loop.index }}">{{ opt }}</label>
+                            {% endfor %}
                         </div>
-                        <div class="invalid-feedback d-block">Please select whether you would recommend this training</div>
+                        <div class="invalid-feedback d-block">Please choose an option for {{ q.label|lower }}</div>
                     </div>
+                    {% endfor %}
 
                     <div class="d-flex justify-content-between mt-4">
-                        <button type="button" class="btn btn-outline-info prev-section">Previous: Ratings</button>
-                        <button type="button" class="btn btn-info next-section">Review & Submit</button>
+                        <button type="button" class="btn btn-outline-info prev-section">Previous</button>
+                        <button type="button" class="btn btn-info next-section">Next</button>
                     </div>
                 </div>
             </div>
+            {% endif %}
 
             <!-- Review Section -->
             <div class="card mb-4 form-section" id="reviewSection" style="display: none;">
                 <div class="card-header bg-warning text-dark">
                     <h4 class="mb-0">
                         <i class="fas fa-clipboard-check me-2"></i>
-                        Review Your Feedback
+                        Review Your Responses
                     </h4>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        Please review your feedback before submitting. You can go back to make changes.
+                        Please review your responses before submitting. You can go back to make changes.
                     </div>
 
                     <div class="review-content">
-                        <!-- Ratings will be populated by JavaScript -->
+                        <!-- Populated dynamically -->
                     </div>
 
                     <div class="d-flex justify-content-between mt-4">
@@ -218,9 +190,8 @@
 <script>
     // Form data will be stored here
     let formData = {};
-    
-    // Current section tracking
-    let currentSection = 1;
-    const totalSections = 3;
+
+    // embed form definition for JS
+    const formDefinition = {{ form|tojson }};
 </script>
 {% endblock %}

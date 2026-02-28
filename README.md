@@ -32,6 +32,13 @@ git clone https://github.com/jakegithub24/Anonymous-Feedback-Form.git
 cd Anonymous-Feedback-Form
 ```
 
+### 1.5 Define your form
+A `form.md` file lives in the project root. It contains a YAML description of the
+questions you want in the feedback form – ratings, text areas, multiple‑choice,
+etc. The application reads this file when rendering `/` and when validating
+submissions. An example template is supplied and you can edit it freely;
+changes take effect without restarting the server.
+
 ### 2. Create virtual environment
 ```bash
 python -m venv venv
@@ -75,6 +82,11 @@ python app.py
 ```
 
 Visit `http://localhost:5000` in your browser.
+
+### Generating a Public Link (ngrok)
+If you want people outside your network to access the form, install `ngrok` and set the `NGROK_AUTHTOKEN` environment variable or run `ngrok authtoken <token>` once. The application will automatically open a tunnel when started and expose the public URL in the console unless `USE_NGROK` is set to `false`.
+
+You can also visit `/share` on the running site to view the link and a QR code that users can scan. No personal data is collected through the form.
 
 ### Application Structure
 ```
@@ -152,6 +164,8 @@ Visit `http://localhost:5000` in your browser.
 6. **What improvements would you suggest?** - Text (max 250 words)
 7. **Would you recommend this training to others?** - Yes/No
 8. **How likely are you to apply what you learned?** - Rating (1-5)
+
+> **Privacy:** the feedback data does **not** include any personally identifying information such as IP address or user agent; responses are completely anonymous.
 
 ## Security Features
 

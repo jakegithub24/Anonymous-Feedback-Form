@@ -4,8 +4,9 @@
  */
 
 // Global variables
-let currentSection = 1;
-const totalSections = 3;
+let sections = [];
+let currentSectionIndex = 0;
+let totalSections = 0;
 let formData = {};
 
 // Initialize when DOM is loaded
@@ -19,11 +20,20 @@ document.addEventListener('DOMContentLoaded', function() {
  * Initialize form functionality
  */
 function initializeForm() {
+    sections = Array.from(document.querySelectorAll('.form-section'));
+    totalSections = sections.length;
+
+    // make only the first section visible
+    sections.forEach((sec, idx) => {
+        sec.style.display = idx === 0 ? 'block' : 'none';
+    });
+
     // Initialize star ratings
     initializeStarRatings();
     
     // Initialize form progress
     updateFormProgress();
+    updateNavigationButtons();
     
     // Smooth scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -188,41 +198,31 @@ function updateCounter(textarea, counter, maxLength) {
 function goToNextSection(event) {
     event.preventDefault();
     
-    // Validate current section before proceeding
     if (!validateCurrentSection()) {
         showValidationErrors();
         return;
     }
-    
-    // Save current section data
     saveCurrentSectionData();
     
-    // Hide current section with animation
-    const currentSectionElement = document.querySelector(`#section${currentSection}`);
-    if (currentSectionElement) {
-        currentSectionElement.style.opacity = '0';
-        currentSectionElement.style.transform = 'translateY(-20px)';
-        
+    const currentElement = sections[currentSectionIndex];
+    const nextIndex = currentSectionIndex + 1;
+    if (currentElement) {
+        currentElement.style.opacity = '0';
+        currentElement.style.transform = 'translateY(-20px)';
         setTimeout(() => {
-            currentSectionElement.style.display = 'none';
-            
-            // Show next section
-            currentSection++;
-            const nextSectionElement = document.querySelector(`#section${currentSection}`);
-            if (nextSectionElement) {
-                nextSectionElement.style.display = 'block';
+            currentElement.style.display = 'none';
+            if (sections[nextIndex]) {
+                currentSectionIndex = nextIndex;
+                const nextElem = sections[currentSectionIndex];
+                nextElem.style.display = 'block';
                 setTimeout(() => {
-                    nextSectionElement.style.opacity = '1';
-                    nextSectionElement.style.transform = 'translateY(0)';
+                    nextElem.style.opacity = '1';
+                    nextElem.style.transform = 'translateY(0)';
                 }, 50);
             }
-            
             updateFormProgress();
             updateNavigationButtons();
-            
-            // Scroll to top of section
-            scrollToSection(nextSectionElement);
-            
+            scrollToSection(sections[currentSectionIndex]);
         }, 300);
     }
 }
@@ -232,33 +232,25 @@ function goToNextSection(event) {
  */
 function goToPreviousSection(event) {
     event.preventDefault();
-    
-    // Hide current section
-    const currentSectionElement = document.querySelector(`#section${currentSection}`);
-    if (currentSectionElement) {
-        currentSectionElement.style.opacity = '0';
-        currentSectionElement.style.transform = 'translateY(20px)';
-        
+    const currentElement = sections[currentSectionIndex];
+    const prevIndex = currentSectionIndex - 1;
+    if (currentElement) {
+        currentElement.style.opacity = '0';
+        currentElement.style.transform = 'translateY(20px)';
         setTimeout(() => {
-            currentSectionElement.style.display = 'none';
-            
-            // Show previous section
-            currentSection--;
-            const prevSectionElement = document.querySelector(`#section${currentSection}`);
-            if (prevSectionElement) {
-                prevSectionElement.style.display = 'block';
+            currentElement.style.display = 'none';
+            if (sections[prevIndex]) {
+                currentSectionIndex = prevIndex;
+                const prevElem = sections[currentSectionIndex];
+                prevElem.style.display = 'block';
                 setTimeout(() => {
-                    prevSectionElement.style.opacity = '1';
-                    prevSectionElement.style.transform = 'translateY(0)';
+                    prevElem.style.opacity = '1';
+                    prevElem.style.transform = 'translateY(0)';
                 }, 50);
             }
-            
             updateFormProgress();
             updateNavigationButtons();
-            
-            // Scroll to top of section
-            scrollToSection(prevSectionElement);
-            
+            scrollToSection(sections[currentSectionIndex]);
         }, 300);
     }
 }
@@ -284,19 +276,15 @@ function scrollToSection(element) {
  */
 function validateCurrentSection() {
     let isValid = true;
-    
-    // Get all required fields in current section
-    const currentSectionElement = document.querySelector(`#section${currentSection}`);
+    const currentSectionElement = sections[currentSectionIndex];
     if (currentSectionElement) {
         const requiredFields = currentSectionElement.querySelectorAll('[required]');
-        
         requiredFields.forEach(field => {
             if (!validateField({ target: field })) {
                 isValid = false;
             }
         });
     }
-    
     return isValid;
 }
 
@@ -362,26 +350,15 @@ function checkFieldValidity(field) {
  * Show validation errors for current section
  */
 function showValidationErrors() {
-    const currentSectionElement = document.querySelector(`#section${currentSection}`);
+    const currentSectionElement = sections[currentSectionIndex];
     if (currentSectionElement) {
         const invalidFields = currentSectionElement.querySelectorAll('.is-invalid');
-        
         if (invalidFields.length > 0) {
-            // Scroll to first invalid field
-            invalidFields[0].scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-            
-            // Add shake animation to invalid fields
+            invalidFields[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
             invalidFields.forEach(field => {
                 field.classList.add('shake');
-                setTimeout(() => {
-                    field.classList.remove('shake');
-                }, 500);
+                setTimeout(() => field.classList.remove('shake'), 500);
             });
-            
-            // Show error message
             showToast('Please fill in all required fields correctly.', 'error');
         }
     }
@@ -410,7 +387,7 @@ document.head.appendChild(styleSheet);
  * Save current section data
  */
 function saveCurrentSectionData() {
-    const currentSectionElement = document.querySelector(`#section${currentSection}`);
+    const currentSectionElement = sections[currentSectionIndex];
     if (currentSectionElement) {
         const inputs = currentSectionElement.querySelectorAll('input, textarea, select');
         
@@ -430,7 +407,7 @@ function saveCurrentSectionData() {
     }
     
     // Update review section if we're on the last section
-    if (currentSection === totalSections - 1) {
+    if (currentSectionIndex === totalSections - 1) {
         updateReviewSection();
     }
 }
@@ -441,72 +418,48 @@ function saveCurrentSectionData() {
 function updateReviewSection() {
     const reviewContent = document.querySelector('.review-content');
     if (!reviewContent) return;
-    
-    let html = `
-        <div class="row">
-            <div class="col-md-6">
-                <h6 class="fw-semibold mb-3">Ratings Summary</h6>
-                <div class="review-item">
-                    <strong>Content Quality:</strong>
-                    <div class="float-end">
-                        ${getStarRating(formData.content_quality || 0)}
-                        <span class="ms-2">${formData.content_quality || 'Not rated'}/5</span>
-                    </div>
-                </div>
-                <div class="review-item">
-                    <strong>Clarity of Explanations:</strong>
-                    <div class="float-end">
-                        ${getStarRating(formData.clarity || 0)}
-                        <span class="ms-2">${formData.clarity || 'Not rated'}/5</span>
-                    </div>
-                </div>
-                <div class="review-item">
-                    <strong>Engagement Level:</strong>
-                    <div class="float-end">
-                        ${getStarRating(formData.engagement || 0)}
-                        <span class="ms-2">${formData.engagement || 'Not rated'}/5</span>
-                    </div>
-                </div>
-                <div class="review-item">
-                    <strong>Overall Satisfaction:</strong>
-                    <div class="float-end">
-                        ${getStarRating(formData.satisfaction || 0)}
-                        <span class="ms-2">${formData.satisfaction || 'Not rated'}/5</span>
-                    </div>
-                </div>
-                <div class="review-item">
-                    <strong>Apply Likelihood:</strong>
-                    <div class="float-end">
-                        ${getStarRating(formData.apply_likelihood || 0)}
-                        <span class="ms-2">${formData.apply_likelihood || 'Not rated'}/5</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <h6 class="fw-semibold mb-3">Feedback Summary</h6>
-                <div class="review-item">
-                    <strong>Recommend to Others:</strong>
-                    <span class="float-end badge ${formData.recommend === 'Yes' ? 'bg-success' : 'bg-danger'}">
-                        ${formData.recommend || 'Not answered'}
-                    </span>
-                </div>
-                <div class="review-item">
-                    <strong>Most Valuable:</strong>
-                    <div class="mt-2 text-muted small">
-                        ${truncateText(formData.most_valuable || 'Not provided', 100)}
-                    </div>
-                </div>
-                <div class="review-item">
-                    <strong>Improvements Suggested:</strong>
-                    <div class="mt-2 text-muted small">
-                        ${truncateText(formData.improvements || 'Not provided', 100)}
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-    
+
+    let html = '';
+
+    // ratings first
+    if (formDefinition.rating && formDefinition.rating.length) {
+        html += '<h6 class="fw-semibold mb-3">Ratings Summary</h6>';
+        formDefinition.rating.forEach(q => {
+            const val = formData[q.name] || 0;
+            html += `<div class="review-item">
+                        <strong>${q.label}:</strong>
+                        <div class="float-end">
+                            ${getStarRating(val)}
+                            <span class="ms-2">${val || 'Not rated'}/5</span>
+                        </div>
+                     </div>`;
+        });
+    }
+
+    // other inputs
+    if ((formDefinition.text && formDefinition.text.length) ||
+        (formDefinition.choice && formDefinition.choice.length)) {
+        html += '<h6 class="fw-semibold mb-3 mt-4">Feedback Details</h6>';
+        (formDefinition.text || []).forEach(q => {
+            const val = formData[q.name] || 'Not provided';
+            html += `<div class="review-item">
+                        <strong>${q.label}:</strong>
+                        <div class="mt-2 text-muted small">
+                            ${truncateText(val, 100)}
+                        </div>
+                     </div>`;
+        });
+        (formDefinition.choice || []).forEach(q => {
+            const val = formData[q.name] || 'Not answered';
+            html += `<div class="review-item">
+                        <strong>${q.label}:</strong>
+                        <span class="float-end badge ${val === 'Yes' ? 'bg-success' : 'bg-danger'}">
+                            ${val}
+                        </span>
+                     </div>`;
+        });
+    }
+
     reviewContent.innerHTML = html;
 }
 
@@ -540,7 +493,8 @@ function truncateText(text, maxLength) {
  * Update form progress bar
  */
 function updateFormProgress() {
-    const progress = (currentSection / totalSections) * 100;
+    if (!totalSections) return;
+    const progress = ((currentSectionIndex + 1) / totalSections) * 100;
     const progressBar = document.getElementById('formProgress');
     if (progressBar) {
         progressBar.style.width = `${progress}%`;
@@ -554,18 +508,24 @@ function updateFormProgress() {
 function updateNavigationButtons() {
     // Update previous buttons
     document.querySelectorAll('.prev-section').forEach(button => {
-        button.disabled = currentSection === 1;
+        button.disabled = currentSectionIndex === 0;
     });
     
     // Update next buttons text
     const nextButtons = document.querySelectorAll('.next-section');
     nextButtons.forEach(button => {
-        if (currentSection === totalSections - 1) {
+        if (currentSectionIndex === totalSections - 2) {
             button.textContent = 'Review & Submit';
             button.classList.remove('btn-primary', 'btn-info');
             button.classList.add('btn-warning');
-        } else if (currentSection === totalSections) {
+            button.style.display = '';
+        } else if (currentSectionIndex === totalSections - 1) {
             button.style.display = 'none';
+        } else {
+            button.textContent = 'Next';
+            button.classList.remove('btn-warning');
+            button.classList.add('btn-primary');
+            button.style.display = '';
         }
     });
 }
