@@ -4,10 +4,16 @@
  */
 
 // Global variables
+<<<<<<< HEAD
 let sections = [];
 let currentSectionIndex = 0;
 let totalSections = 0;
+=======
+let currentSection = 1;
+let totalSections = 0; // will be set after sections are determined
+>>>>>>> d1f1e93 (Added axios support)
 let formData = {};
+let formSections = []; // list of section DOM elements
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -20,12 +26,28 @@ document.addEventListener('DOMContentLoaded', function() {
  * Initialize form functionality
  */
 function initializeForm() {
+<<<<<<< HEAD
     sections = Array.from(document.querySelectorAll('.form-section'));
     totalSections = sections.length;
 
     // make only the first section visible
     sections.forEach((sec, idx) => {
         sec.style.display = idx === 0 ? 'block' : 'none';
+=======
+    // collect sections dynamically so IDs don't matter
+    formSections = Array.from(document.querySelectorAll('.form-section'));
+    totalSections = formSections.length;
+
+    // initialize display: show first section only
+    formSections.forEach((sec, idx) => {
+        if (idx === 0) {
+            sec.style.display = 'block';
+            sec.style.opacity = '1';
+            sec.style.transform = 'translateY(0)';
+        } else {
+            sec.style.display = 'none';
+        }
+>>>>>>> d1f1e93 (Added axios support)
     });
 
     // Initialize star ratings
@@ -33,6 +55,10 @@ function initializeForm() {
     
     // Initialize form progress
     updateFormProgress();
+<<<<<<< HEAD
+=======
+    // Set correct button states on startup
+>>>>>>> d1f1e93 (Added axios support)
     updateNavigationButtons();
     
     // Smooth scroll to top
@@ -202,6 +228,7 @@ function goToNextSection(event) {
         showValidationErrors();
         return;
     }
+<<<<<<< HEAD
     saveCurrentSectionData();
     
     const currentElement = sections[currentSectionIndex];
@@ -215,14 +242,43 @@ function goToNextSection(event) {
                 currentSectionIndex = nextIndex;
                 const nextElem = sections[currentSectionIndex];
                 nextElem.style.display = 'block';
+=======
+
+    // Save current section data
+    saveCurrentSectionData();
+
+    const currentSectionElement = formSections[currentSection - 1];
+    if (currentSectionElement) {
+        currentSectionElement.style.opacity = '0';
+        currentSectionElement.style.transform = 'translateY(-20px)';
+
+        setTimeout(() => {
+            currentSectionElement.style.display = 'none';
+
+            // Show next section
+            currentSection++;
+            const nextSectionElement = formSections[currentSection - 1];
+            if (nextSectionElement) {
+                nextSectionElement.style.display = 'block';
+>>>>>>> d1f1e93 (Added axios support)
                 setTimeout(() => {
                     nextElem.style.opacity = '1';
                     nextElem.style.transform = 'translateY(0)';
                 }, 50);
             }
+<<<<<<< HEAD
             updateFormProgress();
             updateNavigationButtons();
             scrollToSection(sections[currentSectionIndex]);
+=======
+
+            updateFormProgress();
+            updateNavigationButtons();
+
+            // Scroll to top of section
+            scrollToSection(nextSectionElement);
+
+>>>>>>> d1f1e93 (Added axios support)
         }, 300);
     }
 }
@@ -232,6 +288,7 @@ function goToNextSection(event) {
  */
 function goToPreviousSection(event) {
     event.preventDefault();
+<<<<<<< HEAD
     const currentElement = sections[currentSectionIndex];
     const prevIndex = currentSectionIndex - 1;
     if (currentElement) {
@@ -243,14 +300,40 @@ function goToPreviousSection(event) {
                 currentSectionIndex = prevIndex;
                 const prevElem = sections[currentSectionIndex];
                 prevElem.style.display = 'block';
+=======
+
+    const currentSectionElement = formSections[currentSection - 1];
+    if (currentSectionElement) {
+        currentSectionElement.style.opacity = '0';
+        currentSectionElement.style.transform = 'translateY(20px)';
+
+        setTimeout(() => {
+            currentSectionElement.style.display = 'none';
+
+            // Show previous section
+            currentSection--;
+            const prevSectionElement = formSections[currentSection - 1];
+            if (prevSectionElement) {
+                prevSectionElement.style.display = 'block';
+>>>>>>> d1f1e93 (Added axios support)
                 setTimeout(() => {
                     prevElem.style.opacity = '1';
                     prevElem.style.transform = 'translateY(0)';
                 }, 50);
             }
+<<<<<<< HEAD
             updateFormProgress();
             updateNavigationButtons();
             scrollToSection(sections[currentSectionIndex]);
+=======
+
+            updateFormProgress();
+            updateNavigationButtons();
+
+            // Scroll to top of section
+            scrollToSection(prevSectionElement);
+
+>>>>>>> d1f1e93 (Added axios support)
         }, 300);
     }
 }
@@ -276,7 +359,13 @@ function scrollToSection(element) {
  */
 function validateCurrentSection() {
     let isValid = true;
+<<<<<<< HEAD
     const currentSectionElement = sections[currentSectionIndex];
+=======
+    
+    // Get all required fields in current section
+    const currentSectionElement = formSections[currentSection - 1];
+>>>>>>> d1f1e93 (Added axios support)
     if (currentSectionElement) {
         const requiredFields = currentSectionElement.querySelectorAll('[required]');
         requiredFields.forEach(field => {
@@ -387,7 +476,11 @@ document.head.appendChild(styleSheet);
  * Save current section data
  */
 function saveCurrentSectionData() {
+<<<<<<< HEAD
     const currentSectionElement = sections[currentSectionIndex];
+=======
+    const currentSectionElement = formSections[currentSection - 1];
+>>>>>>> d1f1e93 (Added axios support)
     if (currentSectionElement) {
         const inputs = currentSectionElement.querySelectorAll('input, textarea, select');
         
