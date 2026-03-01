@@ -4,14 +4,8 @@
  */
 
 // Global variables
-<<<<<<< HEAD
-let sections = [];
-let currentSectionIndex = 0;
-let totalSections = 0;
-=======
 let currentSection = 1;
 let totalSections = 0; // will be set after sections are determined
->>>>>>> d1f1e93 (Added axios support)
 let formData = {};
 let formSections = []; // list of section DOM elements
 
@@ -26,14 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
  * Initialize form functionality
  */
 function initializeForm() {
-<<<<<<< HEAD
-    sections = Array.from(document.querySelectorAll('.form-section'));
-    totalSections = sections.length;
-
-    // make only the first section visible
-    sections.forEach((sec, idx) => {
-        sec.style.display = idx === 0 ? 'block' : 'none';
-=======
     // collect sections dynamically so IDs don't matter
     formSections = Array.from(document.querySelectorAll('.form-section'));
     totalSections = formSections.length;
@@ -47,7 +33,6 @@ function initializeForm() {
         } else {
             sec.style.display = 'none';
         }
->>>>>>> d1f1e93 (Added axios support)
     });
 
     // Initialize star ratings
@@ -55,10 +40,7 @@ function initializeForm() {
     
     // Initialize form progress
     updateFormProgress();
-<<<<<<< HEAD
-=======
     // Set correct button states on startup
->>>>>>> d1f1e93 (Added axios support)
     updateNavigationButtons();
     
     // Smooth scroll to top
@@ -223,26 +205,11 @@ function updateCounter(textarea, counter, maxLength) {
  */
 function goToNextSection(event) {
     event.preventDefault();
-    
+
     if (!validateCurrentSection()) {
         showValidationErrors();
         return;
     }
-<<<<<<< HEAD
-    saveCurrentSectionData();
-    
-    const currentElement = sections[currentSectionIndex];
-    const nextIndex = currentSectionIndex + 1;
-    if (currentElement) {
-        currentElement.style.opacity = '0';
-        currentElement.style.transform = 'translateY(-20px)';
-        setTimeout(() => {
-            currentElement.style.display = 'none';
-            if (sections[nextIndex]) {
-                currentSectionIndex = nextIndex;
-                const nextElem = sections[currentSectionIndex];
-                nextElem.style.display = 'block';
-=======
 
     // Save current section data
     saveCurrentSectionData();
@@ -257,28 +224,24 @@ function goToNextSection(event) {
 
             // Show next section
             currentSection++;
+            // if we're about to display review, ensure it has up-to-date data
+            if (currentSection === totalSections) {
+                updateReviewSection();
+            }
             const nextSectionElement = formSections[currentSection - 1];
             if (nextSectionElement) {
                 nextSectionElement.style.display = 'block';
->>>>>>> d1f1e93 (Added axios support)
                 setTimeout(() => {
-                    nextElem.style.opacity = '1';
-                    nextElem.style.transform = 'translateY(0)';
+                    nextSectionElement.style.opacity = '1';
+                    nextSectionElement.style.transform = 'translateY(0)';
                 }, 50);
             }
-<<<<<<< HEAD
-            updateFormProgress();
-            updateNavigationButtons();
-            scrollToSection(sections[currentSectionIndex]);
-=======
 
             updateFormProgress();
             updateNavigationButtons();
 
             // Scroll to top of section
             scrollToSection(nextSectionElement);
-
->>>>>>> d1f1e93 (Added axios support)
         }, 300);
     }
 }
@@ -288,19 +251,6 @@ function goToNextSection(event) {
  */
 function goToPreviousSection(event) {
     event.preventDefault();
-<<<<<<< HEAD
-    const currentElement = sections[currentSectionIndex];
-    const prevIndex = currentSectionIndex - 1;
-    if (currentElement) {
-        currentElement.style.opacity = '0';
-        currentElement.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            currentElement.style.display = 'none';
-            if (sections[prevIndex]) {
-                currentSectionIndex = prevIndex;
-                const prevElem = sections[currentSectionIndex];
-                prevElem.style.display = 'block';
-=======
 
     const currentSectionElement = formSections[currentSection - 1];
     if (currentSectionElement) {
@@ -315,25 +265,17 @@ function goToPreviousSection(event) {
             const prevSectionElement = formSections[currentSection - 1];
             if (prevSectionElement) {
                 prevSectionElement.style.display = 'block';
->>>>>>> d1f1e93 (Added axios support)
                 setTimeout(() => {
-                    prevElem.style.opacity = '1';
-                    prevElem.style.transform = 'translateY(0)';
+                    prevSectionElement.style.opacity = '1';
+                    prevSectionElement.style.transform = 'translateY(0)';
                 }, 50);
             }
-<<<<<<< HEAD
-            updateFormProgress();
-            updateNavigationButtons();
-            scrollToSection(sections[currentSectionIndex]);
-=======
 
             updateFormProgress();
             updateNavigationButtons();
 
             // Scroll to top of section
             scrollToSection(prevSectionElement);
-
->>>>>>> d1f1e93 (Added axios support)
         }, 300);
     }
 }
@@ -359,13 +301,9 @@ function scrollToSection(element) {
  */
 function validateCurrentSection() {
     let isValid = true;
-<<<<<<< HEAD
-    const currentSectionElement = sections[currentSectionIndex];
-=======
     
     // Get all required fields in current section
     const currentSectionElement = formSections[currentSection - 1];
->>>>>>> d1f1e93 (Added axios support)
     if (currentSectionElement) {
         const requiredFields = currentSectionElement.querySelectorAll('[required]');
         requiredFields.forEach(field => {
@@ -439,7 +377,7 @@ function checkFieldValidity(field) {
  * Show validation errors for current section
  */
 function showValidationErrors() {
-    const currentSectionElement = sections[currentSectionIndex];
+    const currentSectionElement = formSections[currentSection - 1];
     if (currentSectionElement) {
         const invalidFields = currentSectionElement.querySelectorAll('.is-invalid');
         if (invalidFields.length > 0) {
@@ -476,11 +414,7 @@ document.head.appendChild(styleSheet);
  * Save current section data
  */
 function saveCurrentSectionData() {
-<<<<<<< HEAD
-    const currentSectionElement = sections[currentSectionIndex];
-=======
     const currentSectionElement = formSections[currentSection - 1];
->>>>>>> d1f1e93 (Added axios support)
     if (currentSectionElement) {
         const inputs = currentSectionElement.querySelectorAll('input, textarea, select');
         
@@ -500,7 +434,7 @@ function saveCurrentSectionData() {
     }
     
     // Update review section if we're on the last section
-    if (currentSectionIndex === totalSections - 1) {
+    if (currentSection === totalSections) {
         updateReviewSection();
     }
 }
@@ -587,7 +521,7 @@ function truncateText(text, maxLength) {
  */
 function updateFormProgress() {
     if (!totalSections) return;
-    const progress = ((currentSectionIndex + 1) / totalSections) * 100;
+    const progress = (currentSection / totalSections) * 100;
     const progressBar = document.getElementById('formProgress');
     if (progressBar) {
         progressBar.style.width = `${progress}%`;
@@ -601,18 +535,18 @@ function updateFormProgress() {
 function updateNavigationButtons() {
     // Update previous buttons
     document.querySelectorAll('.prev-section').forEach(button => {
-        button.disabled = currentSectionIndex === 0;
+        button.disabled = currentSection === 1;
     });
     
     // Update next buttons text
     const nextButtons = document.querySelectorAll('.next-section');
     nextButtons.forEach(button => {
-        if (currentSectionIndex === totalSections - 2) {
+        if (currentSection === totalSections - 1) {
             button.textContent = 'Review & Submit';
             button.classList.remove('btn-primary', 'btn-info');
             button.classList.add('btn-warning');
             button.style.display = '';
-        } else if (currentSectionIndex === totalSections - 1) {
+        } else if (currentSection === totalSections) {
             button.style.display = 'none';
         } else {
             button.textContent = 'Next';

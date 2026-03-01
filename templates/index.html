@@ -21,14 +21,9 @@
 
         <!-- Feedback Form -->
         <form id="feedbackForm" class="needs-validation" novalidate>
-<<<<<<< HEAD
             {% if form.rating and form.rating|length > 0 %}
-        <!-- Rating Section -->
-            <div class="card mb-4 form-section" id="ratingSection">
-=======
             <!-- Rating Section -->
             <div class="card mb-4 form-section" id="section1">
->>>>>>> d1f1e93 (Added axios support)
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0">
                         <i class="fas fa-star me-2"></i>
@@ -65,14 +60,9 @@
             </div>
         {% endif %}
 
-<<<<<<< HEAD
             {% if form.text or form.choice %}
-            <!-- Text/Choice Section -->
-            <div class="card mb-4 form-section" id="textSection" style="display: none;">
-=======
             <!-- Text Feedback Section -->
             <div class="card mb-4 form-section" id="section2" style="display: none;">
->>>>>>> d1f1e93 (Added axios support)
                 <div class="card-header bg-info text-white">
                     <h4 class="mb-0">
                         <i class="fas fa-edit me-2"></i>
@@ -196,16 +186,8 @@
 <div id="formData" style="display: none;"></div>
 {% endblock %}
 
-<<<<<<< HEAD
 {% block extra_js %}
 <script>
-    // Form data will be stored here
-    let formData = {};
-
-    // embed form definition for JS
     const formDefinition = {{ form|tojson }};
 </script>
 {% endblock %}
-=======
-
->>>>>>> d1f1e93 (Added axios support)
